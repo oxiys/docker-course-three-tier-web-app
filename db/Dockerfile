@@ -1,6 +1,10 @@
 FROM mysql:latest
-ENV MYSQL_DATABASE=quotesdb \
-    MYSQL_ROOT_PASSWORD=root \
-    MYSQL_USER=user \
-    MYSQL_PASSWORD=password
-COPY init.sql /docker-entrypoint-initdb.d/
+
+# Configurazione del nome del database (variabile non sensibile)
+ENV MYSQL_DATABASE=quotesdb
+
+# Copia dello script SQL assegnando la proprietà all'utente mysql
+COPY --chown=mysql:mysql init.sql /docker-entrypoint-initdb.d/
+
+# Impostazione dell'utente non-root fornito dall'immagine ufficiale MySQL
+USER mysql

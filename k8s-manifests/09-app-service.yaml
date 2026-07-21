@@ -10,4 +10,4 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 5002
-  type: LoadBalancer # Permette l'accesso esterno su cloud provider
+  type: ClusterIP # Permette l'accesso esterno su cloud provider

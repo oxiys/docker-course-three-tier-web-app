@@ -14,10 +14,23 @@ spec:
         app: api
     spec:
       serviceAccountName: my-app-sa
+      # 1. FIX KSV-0118 (Pod level): Forza l'esecuzione come utente non-root
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
       containers:
       - name: api
         # Sostituisci <IL_TUO_USERNAME_DOCKERHUB> con il tuo username (es. oxiys)
         image: oxiys/three-tier-api:latest 
+        # 2. FIX KSV-0118 (Container level) & KSV-0014: Disabilita privilegi e filesystem readonly
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
         ports:
         - containerPort: 5001
         env:
@@ -38,3 +51,11 @@ spec:
             secretKeyRef:
               name: mysql-credentials
               key: MYSQL_DATABASE
+        # Aggiunto per supportare readOnlyRootFilesystem (KSV-0014)
+        volumeMounts:
+        - name: tmp-dir
+          mountPath: /tmp
+      # Volume temporaneo in memoria per i file temporanei dell'API
+      volumes:
+      - name: tmp-dir
+        emptyDir: {}

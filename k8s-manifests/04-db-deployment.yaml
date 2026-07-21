@@ -13,6 +13,7 @@ spec:
       labels:
         app: database
     spec:
+      serviceAccountName: my-app-sa
       containers:
       - name: mysql
         image: mysql:latest

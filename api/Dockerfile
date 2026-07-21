@@ -15,6 +15,7 @@ COPY . .
 
 # RUN pip install mysqlclient - already in the requirements.txt
 
+RUN pip install --upgrade pip setuptools wheel>=0.46.2 jaraco.context>=6.1.0
 RUN pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 5001

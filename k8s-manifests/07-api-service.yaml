@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  # Il nome deve essere "api" perché in app.py il frontend fa richieste a "http://api:5001"
+  name: api
+  namespace: three-tier-app
+spec:
+  selector:
+    app: api
+  ports:
+    - protocol: TCP
+      port: 5001
+      targetPort: 5001
+  type: ClusterIP

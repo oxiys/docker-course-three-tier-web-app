@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-deployment
+  namespace: three-tier-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+      - name: api
+        # Sostituisci <IL_TUO_USERNAME_DOCKERHUB> con il tuo username (es. oxiys)
+        image: oxiys/three-tier-api:latest 
+        ports:
+        - containerPort: 5001
+        env:
+        - name: MYSQL_HOST
+          value: "mysql-service" # Questo è il nome del Service del database in Kubernetes
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: mysql-credentials
+              key: MYSQL_USER
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-credentials
+              key: MYSQL_PASSWORD
+        - name: MYSQL_DB
+          valueFrom:
+            secretKeyRef:
+              name: mysql-credentials
+              key: MYSQL_DATABASE

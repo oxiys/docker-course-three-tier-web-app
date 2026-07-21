@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-init-script
+  namespace: three-tier
+data:
+  init.sql: |
+    -- Copia e incolla qui sotto l'ESATTO contenuto del file init.sql 
+    -- o db.sql presente nella cartella /db del tuo repository forkato.
+    CREATE TABLE IF NOT EXISTS `quotes` (
+      `id` int(11) NOT NULL AUTO_INCREMENT,
+      `quote` text NOT NULL,
+      `author` varchar(255) DEFAULT NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+    INSERT INTO quotes(quote, author)
+    VALUES("Be the change you want to see in the world.", "Ghandi"), ("Master patterns in life, and  you'll never suffer is the secret","someone");

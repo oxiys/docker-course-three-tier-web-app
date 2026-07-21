@@ -1,0 +1,96 @@
+# 1. DEFAULT DENY + ALLOW DNS
+# Blocca tutto il traffico in entrata e in uscita di default,
+# eccetto il traffico in uscita verso il server DNS di Kubernetes (necessario per risolvere i nomi).
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: default-deny-allow-dns
+  namespace: three-tier-app
+spec:
+  endpointSelector:
+    matchLabels: {}
+  ingress: []
+  egress:
+  - toEndpoints:
+    - matchLabels:
+        "k8s:io.kubernetes.pod.namespace": kube-system
+        "k8s:k8s-app": kube-dns
+    toPorts:
+    - ports:
+      - port: "53"
+        protocol: ANY
+---
+# 2. POLICY PER IL FRONTEND
+# Permette il traffico in entrata dagli utenti esterni (internet)
+# Permette il traffico in uscita ESCLUSIVAMENTE verso l'API sulla porta 5001
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: frontend-policy
+  namespace: three-tier-app
+spec:
+  endpointSelector:
+    matchLabels:
+      app: frontend
+  ingress:
+  - fromEntities:
+    - world # Consente traffico da internet verso il frontend
+    - cluster
+  egress:
+  - toEndpoints:
+    - matchLabels:
+        app: api
+    toPorts:
+    - ports:
+      - port: "5001"
+        protocol: TCP
+---
+# 3. POLICY PER L'API (BACKEND)
+# Permette il traffico in entrata ESCLUSIVAMENTE dal Frontend
+# Permette il traffico in uscita ESCLUSIVAMENTE verso il Database sulla porta 3306
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: api-policy
+  namespace: three-tier-app
+spec:
+  endpointSelector:
+    matchLabels:
+      app: api
+  ingress:
+  - fromEndpoints:
+    - matchLabels:
+        app: frontend
+    toPorts:
+    - ports:
+      - port: "5001"
+        protocol: TCP
+  egress:
+  - toEndpoints:
+    - matchLabels:
+        app: database
+    toPorts:
+    - ports:
+      - port: "3306"
+        protocol: TCP
+---
+# 4. POLICY PER IL DATABASE
+# Permette il traffico in entrata ESCLUSIVAMENTE dall'API. 
+# IL FRONTEND È BLOCCATO.
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: db-policy
+  namespace: three-tier-app
+spec:
+  endpointSelector:
+    matchLabels:
+      app: database
+  ingress:
+  - fromEndpoints:
+    - matchLabels:
+        app: api
+    toPorts:
+    - ports:
+      - port: "3306"
+        protocol: TCP

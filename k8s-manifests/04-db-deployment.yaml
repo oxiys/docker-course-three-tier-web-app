@@ -14,9 +14,22 @@ spec:
         app: database
     spec:
       serviceAccountName: my-app-sa
+      # 1. FIX KSV-0118 (Pod level): Imposta un utente non-root di default (l'utente mysql ufficiale ha UID 999)
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
       containers:
       - name: mysql
         image: mysql:latest
+        # 2. FIX KSV-0118 (Container level) & KSV-0014: Rimuove privilegi e imposta il filesystem in sola lettura
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
         ports:
         - containerPort: 3306
         env:
@@ -64,6 +77,11 @@ spec:
           mountPath: /var/lib/mysql
         - name: mysql-initdb
           mountPath: /docker-entrypoint-initdb.d
+        # Aggiunti per supportare readOnlyRootFilesystem (KSV-0014)
+        - name: tmp-dir
+          mountPath: /tmp
+        - name: run-dir
+          mountPath: /var/run/mysqld
       volumes:
       - name: mysql-persistent-storage
         persistentVolumeClaim:
@@ -71,3 +89,8 @@ spec:
       - name: mysql-initdb
         configMap:
           name: mysql-init-script
+      # Volumi temporanei in memoria per permettere a MySQL di scrivere file temporanei e socket
+      - name: tmp-dir
+        emptyDir: {}
+      - name: run-dir
+        emptyDir: {}

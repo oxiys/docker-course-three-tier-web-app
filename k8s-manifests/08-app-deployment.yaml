@@ -13,6 +13,7 @@ spec:
       labels:
         app: frontend
     spec:
+      serviceAccountName: my-app-sa
       containers:
       - name: frontend
         # Sostituisci <IL_TUO_USERNAME_DOCKERHUB> con il tuo username (es. oxiys)
